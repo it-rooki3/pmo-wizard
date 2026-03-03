@@ -28,6 +28,7 @@ export default function Chatbot() {
   const [inputValue, setInputValue] = useState("");
   const [loadingResponse, setLoadingResponse] = useState(false);
   const [historyLoaded, setHistoryLoaded] = useState(false);
+   const [promptKey, setPromptKey] = useState("");
   const messagesEndRef = useRef(null);
 
   // --- Helpers ---
@@ -173,6 +174,7 @@ export default function Chatbot() {
 
 
   const safeSend = (payload) => {
+    console.log(payload)
     if (socket && socket.readyState === WebSocket.OPEN) {
       socket.send(JSON.stringify(payload));
     } else {
@@ -182,7 +184,7 @@ export default function Chatbot() {
 
   const handleSendMessage = () => {
     if (inputValue.trim() === "") return;
-
+  
     const message = { question: inputValue };
     safeSend(message);
     setMessages((prev) => [...prev, { from: "user", text: inputValue }]);
@@ -190,14 +192,19 @@ export default function Chatbot() {
     setLoadingResponse(true);
   };
 
-  const handlePromptSubmit = async (text) => {
-    if (!text || text.trim() === "") return;
+  const handlePromptKeyChange = (promptKey) =>{
+    setPromptKey(promptKey);
+  }
+  
 
-    const message = { question: text };
+  const handlePromptSubmit = async (text, prompt_key) => {
+    if (!text || text.trim() === "") return;
+    const message = { prompt_key: prompt_key, question: text };
     safeSend(message);
     setMessages((prev) => [...prev, { from: "user", text }]);
     setInputValue("");
     setLoadingResponse(true);
+    setPromptKey("")
   };
 
   const formatText = (text) => {
@@ -330,8 +337,8 @@ export default function Chatbot() {
 
       {/* Quick Actions */}
       <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1, mt: 1, flexWrap: 'wrap' }}>
-        <ProjectRiskReport onSubmit={handlePromptSubmit} />
-        <ValidationReport onSubmit={handlePromptSubmit} />
+        <ProjectRiskReport onSubmit={handlePromptSubmit}/>
+        <ValidationReport onSubmit={handlePromptSubmit}/>
         
         <Tooltip title="Reviews task progress and quality.">
           <Button
@@ -362,7 +369,7 @@ export default function Chatbot() {
           </Button>
         </Tooltip>
 
-        <ResourceRiskPrompt onSubmit={handlePromptSubmit} />
+        <ResourceRiskPrompt onSubmit={handlePromptSubmit}/>
 
         <Tooltip title="Marks key project achievements or checkpoints.">
           <Button

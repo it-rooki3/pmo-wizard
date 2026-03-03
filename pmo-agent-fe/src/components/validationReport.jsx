@@ -61,8 +61,7 @@ const ValidationReport = ({ onSubmit }) => {
     };
 
     const handleSubmit = () => {
-        // submit what user typed
-        onSubmit(currentValidationPrompt);
+        onSubmit(currentValidationPrompt, "validation");
 
         // reset to original default
         setCurrentValidationPrompt(baseValidationPrompt);

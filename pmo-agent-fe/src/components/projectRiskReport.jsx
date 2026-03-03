@@ -61,7 +61,7 @@ const ProjectRiskReport = ({ onSubmit }) => {
     };
 
     const handleSubmit = () => {
-        onSubmit(currentProjectRiskPrompt);
+        onSubmit(currentProjectRiskPrompt, 'project_risk');
 
         // reset textarea back to original default
         setCurrentProjectRiskPrompt(baseProjectRiskPrompt);

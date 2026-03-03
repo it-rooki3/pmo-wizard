@@ -64,7 +64,8 @@ const ResourceRiskPrompt = ({ onSubmit }) => {
 
   const handleSubmit = () => {
     // Send whatever the user currently typed
-    onSubmit?.(currentResourcePrompt);
+    
+    onSubmit?.(currentResourcePrompt, 'resource_risk');
 
     // Reset back to the original default from the API
     setCurrentResourcePrompt(baseResourcePrompt);
