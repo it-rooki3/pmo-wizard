@@ -158,7 +158,7 @@ export default function Appbar() {
                       arrow
                     >
                     
-  <ListItemButton
+  <Box
   to={`/projects/${projectId}`}
   component={RouterLink}
   sx={{
@@ -167,27 +167,29 @@ export default function Appbar() {
     borderRadius: 2,
     display: "flex",
     justifyContent: "center",
-    alignItems: "center"
+    alignItems: "center",
   }}
->
-  <ListItemIcon
-    sx={{
-      minWidth: 0,
-      display: "flex",
-      flexDirection: "column",   // ← stack vertical
-      alignItems: "center",       // ← CENTER horizontally
-      justifyContent: "center",   // ← CENTER vertically
-      gap: 0.2,
-      color: activePath.startsWith(`/projects/${projectId}`) ? "#2e2e38" : "gray",
-    }}
   >
+    <ListItemIcon
+      sx={{
+        minWidth: 0,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 0.2,
+        padding: 1,      // <-- THIS LINE centers the icons properly
+        color: activePath.startsWith(`/projects/${projectId}`) ? "#2e2e38" : "gray",
+      }}
+    >
+
     {/* arrow down icon */}
     <KeyboardArrowDownIcon sx={{ fontSize: 24, opacity: 0.9 }} />
 
     {/* file icon */}
     <FilePresentIcon sx={{ fontSize: 28 }} />
-  </ListItemIcon>
-</ListItemButton>
+    </ListItemIcon>
+  </Box>
                     </Tooltip>
                   </ListItem>
                 )}

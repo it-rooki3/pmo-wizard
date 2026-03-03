@@ -82,7 +82,7 @@ const ProjectRiskReport = ({ onSubmit }) => {
 
     return (
         <>
-            <Tooltip title="Identifies potential issues that could affect project success." placement="top">
+            <Tooltip title="Identifies potential issues that could affect project success." placement="right">
                 <Button
                     type="button"                 // avoid implicit submit in forms
                     variant="small"

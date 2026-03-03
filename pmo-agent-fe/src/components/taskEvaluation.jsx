@@ -88,7 +88,7 @@ const TaskEvaluation = ({ onSubmit }) => {
 
   return (
     <>
-      <Tooltip title="Reviews task progress and quality." placement="top">
+      <Tooltip title="Reviews task progress and quality." placement="right">
         <Button
           type="button"                 // avoid implicit submit in forms
           variant="small"

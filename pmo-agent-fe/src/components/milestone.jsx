@@ -88,7 +88,7 @@ const MilestonePrompt = ({ onSubmit }) => {
 
   return (
     <>
-      <Tooltip title="Marks key project achievements or checkpoints." placement="top">
+      <Tooltip title="Marks key project achievements or checkpoints." placement="right">
         <Button
           type="button"                 // avoid implicit submit in forms
           variant="small"

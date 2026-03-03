@@ -88,7 +88,7 @@ const ResourceRiskPrompt = ({ onSubmit }) => {
 
   return (
     <>
-      <Tooltip title="Checks availability and sufficiency of needed resources." placement="top">
+      <Tooltip title="Checks availability and sufficiency of needed resources." placement="right">
         <Button
           type="button"                 // avoid implicit submit in forms
           variant="small"
