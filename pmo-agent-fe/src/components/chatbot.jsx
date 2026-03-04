@@ -371,7 +371,7 @@ export default function Chatbot() {
           variant="contained"
           sx={{
             width: 160,        // make it big but not full-width
-            py: 2,
+            py: 1,
             fontSize: ".8rem",
             fontWeight: "bold",
             backgroundColor: "#2e2e38"
