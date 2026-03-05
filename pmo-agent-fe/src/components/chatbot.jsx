@@ -297,19 +297,22 @@ export default function Chatbot() {
                       remarkPlugins={[remarkGfm, remarkBreaks]}
                       components={{
                         p: ({ node, ...props }) => (
-                          <Typography variant="body2" component="p" {...props} />
+                          <Typography
+                            variant="body2"
+                            component="p"
+                            sx={{ margin: 0, padding: 0 }}   // 🔥 FIX SPACING
+                            {...props}
+                          />
                         ),
-                        code: ({ inline, children, ...props }) => (
-                          <code
+                        li: ({ node, ...props }) => (
+                          <li
                             style={{
-                              background: inline ? "rgba(0,0,0,0.06)" : "transparent",
-                              padding: inline ? "0.2em 0.4em" : 0,
-                              borderRadius: 4,
+                              marginTop: 4,    // 🔥 Tight bullet spacing
+                              marginBottom: 4, //
+                              marginLeft: 0,
                             }}
                             {...props}
-                          >
-                            {children}
-                          </code>
+                          />
                         ),
                         pre: ({ node, ...props }) => (
                           <Box
@@ -323,11 +326,17 @@ export default function Chatbot() {
                             {...props}
                           />
                         ),
-                        a: ({ node, ...props }) => (
-                          <a {...props} target="_blank" rel="noopener noreferrer" />
-                        ),
-                        li: ({ node, ...props }) => (
-                          <li style={{ marginLeft: 16 }} {...props} />
+                        code: ({ inline, children, ...props }) => (
+                          <code
+                            style={{
+                              background: inline ? "rgba(0,0,0,0.06)" : "transparent",
+                              padding: inline ? "0.2em 0.4em" : 0,
+                              borderRadius: 4,
+                            }}
+                            {...props}
+                          >
+                            {children}
+                          </code>
                         ),
                       }}
                     >
