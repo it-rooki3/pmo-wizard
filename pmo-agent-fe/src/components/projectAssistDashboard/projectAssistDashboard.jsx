@@ -372,21 +372,9 @@ const ProjectAssistDashboard = () => {
               <Stack direction="row" spacing={1}>
                 {/*Log Button: */}
                 {hasErrorLog && (
-                  // <Button
-                  //   variant="contained"
-                  //   onClick={handleDownloadLastErrorLog}
-                  //   sx={{
-                  //     backgroundColor: "#ffe600",
-                  //     "&:hover": { backgroundColor: "#ffe600" },
-                  //     color: '#2e2e38'
-                  //   }}
-                  // >
-                  //   <FileDownloadOutlinedIcon sx={{ mr: 1, color: '#2e2e38'}} />
-                  //   Error Report
-                  // </Button>
                   <PayloadIssue
                     report={backendIssuesPayload}
-                    filename={`${projectId || "project"}_upload_issues.xlsx`}
+                    projectName={projectName}
                   />
                 )}
 
@@ -639,21 +627,9 @@ const ProjectAssistDashboard = () => {
 
           {/* LEFT SIDE */}
           <Box>
-            {/* <Button
-              variant="contained"
-              onClick={handleDownloadLastErrorLog}
-              sx={{
-                backgroundColor: "#ffe600",
-                "&:hover": { backgroundColor: "#ffe600" },
-                color: '#2e2e38'
-              }}
-            >
-              <FileDownloadOutlinedIcon sx={{ mr: 1, color: '#2e2e38' }} />
-              Error Report
-            </Button> */}
             <PayloadIssue
               report={backendIssuesPayload}
-              filename={`${projectId || "project"}_upload_issues.xlsx`}
+              projectName={projectName}
             />
           </Box>
 
