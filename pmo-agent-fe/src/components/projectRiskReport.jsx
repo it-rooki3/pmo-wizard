@@ -89,7 +89,6 @@ const ProjectRiskReport = ({ onSubmit }) => {
                     onClick={handleSubmit}
                     sx={{
                         fontWeight: 600,
-                        flex: 1,
                         justifyContent: "space-between",
                         borderRadius: 2,
                         textTransform: "none",
@@ -97,7 +96,7 @@ const ProjectRiskReport = ({ onSubmit }) => {
                         color: "#fff", 
                     }}
                 >
-                    {loading ? "Loading…" : "Project Risk"}
+                    {loading ? "Loading…" : "Overall Project Health"}
 
                     {/* Make it a span to avoid nested <button> */}
                     <IconButton
@@ -134,7 +133,7 @@ const ProjectRiskReport = ({ onSubmit }) => {
             // sx={{ "& .MuiDialog-paper": { zIndex: 10 } }}
             >
                 <DialogTitle id="riskReportModalLabel" sx={{ backgroundColor: "#2e2e38", fontWeight: 600, color: '#fff', }}>
-                    Project Risk
+                    Overall Project Health
                 </DialogTitle>
 
                 <DialogContent dividers>

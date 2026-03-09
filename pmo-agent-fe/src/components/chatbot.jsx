@@ -10,7 +10,7 @@ import {
   Button,
   TextField,
   IconButton,
-  Tooltip,
+  Divider,
   Menu,
   MenuItem,
   Popover
@@ -41,6 +41,10 @@ export default function Chatbot() {
   const [historyLoaded, setHistoryLoaded] = useState(false);
   const [promptKey, setPromptKey] = useState("");
   const messagesEndRef = useRef(null);
+
+  // ADD THESE STATES
+  const [anchorElAssociated, setAnchorElAssociated] = useState(null);
+  const [anchorElCustom, setAnchorElCustom] = useState(null);
 
   //For Prompt Button
   const [anchorEl, setAnchorEl] = useState(null);
@@ -371,58 +375,141 @@ export default function Chatbot() {
         <div ref={messagesEndRef} />
       </Box>
 
-      {/* Grouped Prompt Button */}
-      {/* Quick Actions */}
-      <Box sx={{ mb: 1, mt: 1, display: 'flex', justifyContent: 'flex-start' }}>
+      {/* FLEX ROW FOR LEFT + RIGHT BUTTONS */}
+      {/* FLEX ROW FOR LEFT + RIGHT BUTTONS */}
+<Box 
+  sx={{ 
+    display: "flex", 
+    alignItems: "center", 
+    mt: 1, 
+    mb: 1 
+  }}
+>
+  {/* LEFT SIDE — PROJECT HEALTH BUTTON */}
+  <ProjectRiskReport onSubmit={handlePromptSubmit} />
 
-        {/* BIG BUTTON ON LEFT */}
-        <Button
-          variant="contained"
-          sx={{
-            width: 160,        // make it big but not full-width
-            py: 1,
-            fontSize: ".8rem",
-            fontWeight: "bold",
-            backgroundColor: "#2e2e38"
-          }}
-          onClick={(e) => setAnchorEl(e.currentTarget)}
-        >
-          Quick Prompt
-          <ArrowDropUpIcon sx={{ ml: .5 }} />
-        </Button>
-        
-        {/* POPOVER ABOVE BUTTON */}
-        <Popover
-          open={Boolean(anchorEl)}
-          anchorEl={anchorEl}
-          onClose={() => setAnchorEl(null)}
-          anchorOrigin={{
-            vertical: "top",      // opens ABOVE
-            horizontal: "left",   // aligned to left side
-          }}
-          transformOrigin={{
-            vertical: "bottom",
-            horizontal: "left",
-          }}
-          PaperProps={{
-            sx: {
-              mt: -1,
-              borderRadius: 2,
-              p: 1.5,
-              width: 260,
-              backgroundColor: "#f5f5f5",
-              boxShadow: "0 4px 20px rgba(0,0,0,0.25)",
-            }
-          }}
-        >
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-            <ProjectRiskReport onSubmit={handlePromptSubmit} />
-            <TaskEvaluation onSubmit={handlePromptSubmit} />
-            <ResourceRiskPrompt onSubmit={handlePromptSubmit} />
-            <MilestonePrompt onSubmit={handlePromptSubmit} />
-          </Box>
-        </Popover>
+  {/* RIGHT SIDE — ASSOCIATED PROJECT RISK BUTTON */}
+  <Box sx={{ ml: 1, mr: 1 }}>
+    <Button
+      variant="contained"
+      sx={{
+        width: 250,
+        py: 1,
+        fontSize: ".8rem",
+        fontWeight: "bold",
+        backgroundColor: "#2e2e38"
+      }}
+      onClick={(e) => setAnchorElAssociated(e.currentTarget)}
+    >
+      Associated Project Risk
+      <ArrowDropUpIcon sx={{ ml: .5 }} />
+    </Button>
+
+    <Popover
+      open={Boolean(anchorElAssociated)}
+      anchorEl={anchorElAssociated}
+      onClose={() => setAnchorElAssociated(null)}
+      anchorOrigin={{
+        vertical: "top",
+        horizontal: "left",
+      }}
+      transformOrigin={{
+        vertical: "bottom",
+        horizontal: "left",
+      }}
+      PaperProps={{
+        sx: {
+          mt: -1,
+          borderRadius: 2,
+          p: 1.5,
+          width: 260,
+          backgroundColor: "#f5f5f5",
+          boxShadow: "0 4px 20px rgba(0,0,0,0.25)",
+        }
+      }}
+    >
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+        <TaskEvaluation onSubmit={handlePromptSubmit} />
+        <ResourceRiskPrompt onSubmit={handlePromptSubmit} />
+        <MilestonePrompt onSubmit={handlePromptSubmit} />
       </Box>
+    </Popover>
+  </Box>
+
+  {/* CUSTOM PROMPT BUTTON */}
+  <Box>
+    <Button
+      variant="contained"
+      sx={{
+        width: 250,
+        py: 1,
+        fontSize: ".8rem",
+        fontWeight: "bold",
+        backgroundColor: "#2e2e38"
+      }}
+      onClick={(e) => setAnchorElCustom(e.currentTarget)}
+    >
+      Custom Prompt
+      <ArrowDropUpIcon sx={{ ml: .5 }} />
+    </Button>
+
+    <Popover
+      open={Boolean(anchorElCustom)}
+      anchorEl={anchorElCustom}
+      onClose={() => setAnchorElCustom(null)}
+      anchorOrigin={{
+        vertical: "top",
+        horizontal: "left",
+      }}
+      transformOrigin={{
+        vertical: "bottom",
+        horizontal: "left",
+      }}
+      PaperProps={{
+        sx: {
+          mt: -1,
+          borderRadius: 2,
+          p: 2,
+          width: 260,
+          backgroundColor: "#f5f5f5",
+          boxShadow: "0 4px 20px rgba(0,0,0,0.25)",
+        }
+      }}
+    >
+      <Typography
+        variant="subtitle2"
+        sx={{ fontWeight: "bold", mb: 1 }}
+      >
+        List of Custom Prompt
+      </Typography>
+
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+        <Typography
+          variant="body2"
+          sx={{ textAlign: "center", color: "gray", py: 1 }}
+        >
+          No Custom Prompt yet
+        </Typography>
+      </Box>
+
+      <Divider sx={{ my: 1.5 }} />
+
+      <Button
+        variant="contained"
+        fullWidth
+        sx={{
+          backgroundColor: "#2e2e38",
+          fontWeight: "bold",
+          py: 1,
+        }}
+        onClick={handlePromptSubmit}
+      >
+        Create Prompt
+      </Button>
+    </Popover>
+  </Box>
+</Box>
+      
 
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
         <TextField

@@ -19,7 +19,8 @@ import { Link as RouterLink, useLocation, matchPath } from 'react-router-dom';
 import HomeIcon from '@mui/icons-material/Home';
 import WorkIcon from '@mui/icons-material/Work';
 import FilePresentIcon from '@mui/icons-material/FilePresent';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
+import SubdirectoryArrowRightIcon from '@mui/icons-material/SubdirectoryArrowRight';
 
 import { ENV } from "../../configure/env.jsx";
 import React from 'react';
@@ -157,39 +158,35 @@ export default function Appbar() {
                       placement="right"
                       arrow
                     >
-                    
-  <Box
-  to={`/projects/${projectId}`}
-  component={RouterLink}
-  sx={{
-    minHeight: 48,
-    mx: 1,
-    borderRadius: 2,
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-  }}
-  >
-    <ListItemIcon
-      sx={{
-        minWidth: 0,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 0.2,
-        padding: 1,      // <-- THIS LINE centers the icons properly
-        color: activePath.startsWith(`/projects/${projectId}`) ? "#2e2e38" : "gray",
-      }}
-    >
+                      <Box
+                        to={`/projects/${projectId}`}
+                        component={RouterLink}
+                        sx={{
+                          minHeight: 48,
+                          mx: 1,
+                          borderRadius: 2,
+                          display: "flex",
+                          justifyContent: "center",   // <--- centers whole content
+                          alignItems: "center",
+                        }}
+                      >
+                        <ListItemIcon
+                          sx={{
+                            width: 48,                 // <--- FIX: lock width, keeps icons centered
+                            minWidth: 48,              // <--- prevents shrinking
+                            display: "flex",
+                            flexDirection: "row",
+                            alignItems: "center",
+                            justifyContent: "center",  // <--- keeps both icons centered together
+                            padding: 1,
+                            color: activePath.startsWith(`/projects/${projectId}`) ? "#2e2e38" : "gray",
+                          }}
+                        >
+                          {/* File icon */}
+                          <FilePresentIcon sx={{ fontSize: 24, ml: 2 }} />
 
-    {/* arrow down icon */}
-    <KeyboardArrowDownIcon sx={{ fontSize: 24, opacity: 0.9 }} />
-
-    {/* file icon */}
-    <FilePresentIcon sx={{ fontSize: 28 }} />
-    </ListItemIcon>
-  </Box>
+                        </ListItemIcon>
+                      </Box>
                     </Tooltip>
                   </ListItem>
                 )}
