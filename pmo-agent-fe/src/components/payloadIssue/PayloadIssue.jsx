@@ -64,7 +64,7 @@ function saveIssuesAsXlsx(report, projectName = "project") {
 
   // YYYY-MM-DD (UTC). If you want local, build it manually.
   const safeTs = new Date().toISOString().slice(0, 10);
-  const name = `Error_Log_${projectName}_${safeTs}.xlsx`;
+  const name = `Error-Report_${projectName}_${safeTs}.xlsx`;
 
   const aoa = buildIssuesAoA(report, projectName); // <-- pass projectName in
   const ws = XLSX.utils.aoa_to_sheet(aoa);

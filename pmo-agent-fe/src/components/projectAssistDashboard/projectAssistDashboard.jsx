@@ -21,13 +21,14 @@ import {
   AlertTitle,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+
 // PAGES
 import Chatbot from "../chatbot";
 
 // Components
-import AdditionalDocuments from "../additionalDocuments/AdditionalDocuments"
 import PayloadIssue from "../payloadIssue/PayloadIssue";
-
+import AdditionalDocuments from "../documents/AdditionalDocuments"
+import ExistingDocumentsDialog from "../documents/ExistingDocuments"
 
 // prettify keys like "project_plan" → "Project Plan"
 const prettifyFileLabel = (key = "Unknown File") =>
@@ -54,10 +55,30 @@ const ProjectAssistDashboard = () => {
     raid_log: null,
   });
 
+  // --- ADD: Store backend hashes by file_type and per-field warnings
+  // existingHashesByType: { [file_type]: Set<hashHex> }
+  const [existingHashesByType, setExistingHashesByType] = useState({});
+  // fileHashWarnings: { [fieldName]: string | null }
+  const [fileHashWarnings, setFileHashWarnings] = useState({});
+
+  // --- ADD: SHA-256 helper (browser Web Crypto)
+  const fileToSHA256Hex = async (file) => {
+    if (!window.crypto?.subtle) return null; // non-blocking: skip if not available
+    const buf = await file.arrayBuffer();
+    const hashBuf = await crypto.subtle.digest("SHA-256", buf);
+    const hashArray = Array.from(new Uint8Array(hashBuf));
+    return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+  };
 
   const inputRefs = useState({})[0];
   const clearSingleFile = (fieldName) => {
     setFiles((prev) => ({
+      ...prev,
+      [fieldName]: null,
+    }));
+
+    // --- ADD: clear the duplicate-hash warning for this field
+    setFileHashWarnings((prev) => ({
       ...prev,
       [fieldName]: null,
     }));
@@ -68,7 +89,6 @@ const ProjectAssistDashboard = () => {
     }
   };
 
-
   //ErrorLog
   const [hasErrorLog, setHasErrorLog] = useState(false);
 
@@ -76,6 +96,13 @@ const ProjectAssistDashboard = () => {
   const [showModal, setShowModal] = useState(false);
   const [allIssues, setAllIssues] = useState([]);
 
+  //Existing Document
+  const [existingOpen, setExistingOpen] = useState(false);
+  const hasExistingDocuments =
+      !!(project?.input_files &&
+        Object.values(project.input_files).some(
+          (arr) => Array.isArray(arr) && arr.length > 0
+        ));
 
   useEffect(() => {
     const getProject = async () => {
@@ -93,6 +120,29 @@ const ProjectAssistDashboard = () => {
     getProject();
   }, [projectId]);
 
+  // --- ADD: Fetch existing uploaded file hashes for this project
+  useEffect(() => {
+    const loadExistingFileHashes = async () => {
+      try {
+        const { data } = await axios.get(`${ENV.API_URL}/${projectId}/files`);
+        const byType = {};
+        (data?.files || []).forEach((f) => {
+          const type = f?.file_type;
+          const hash = f?.file_hash;
+          if (!type || !hash) return;
+          if (!byType[type]) byType[type] = new Set();
+          byType[type].add(hash);
+        });
+        setExistingHashesByType(byType);
+      } catch (err) {
+        console.error("Failed to load existing file hashes:", err);
+        // Non-blocking; we just skip hash comparison
+      }
+    };
+
+    loadExistingFileHashes();
+  }, [projectId]);
+
   // Handle file input changes
   const handleFileChange = (e) => {
     const { name, files: fileList, multiple } = e.target;
@@ -102,6 +152,55 @@ const ProjectAssistDashboard = () => {
       [name]: multiple ? Array.from(fileList) : fileList[0],
     }));
   };
+
+  // --- ADD: Whenever selected files change, recompute duplicate-hash warnings
+  useEffect(() => {
+    const recomputeWarnings = async () => {
+      const updates = {};
+
+      // Iterate over all fields in `files`
+      for (const [fieldName, value] of Object.entries(files || {})) {
+        // Clear warning if no file selected
+        if (!value) {
+          updates[fieldName] = null;
+          continue;
+        }
+
+        const existingSet = existingHashesByType[fieldName];
+        if (!existingSet || existingSet.size === 0) {
+          // No known hashes to compare for this file_type/field
+          updates[fieldName] = null;
+          continue;
+        }
+
+        const candidates = Array.isArray(value) ? value : [value];
+        let isDuplicate = false;
+
+        // Check each selected file's hash
+        for (const f of candidates) {
+          if (!(f instanceof File)) continue;
+          try {
+            const hex = await fileToSHA256Hex(f);
+            if (hex && existingSet.has(hex)) {
+              isDuplicate = true;
+              break;
+            }
+          } catch (e) {
+            console.error("Hashing failed:", e);
+            // If hashing fails, we don't block — no warning set
+          }
+        }
+
+        updates[fieldName] = isDuplicate
+          ? "This file matches a previously uploaded version."
+          : null;
+      }
+
+      setFileHashWarnings((prev) => ({ ...prev, ...updates }));
+    };
+
+    recomputeWarnings();
+  }, [files, existingHashesByType]);
 
   // Submit Upload
   const handleSubmit = async (e) => {
@@ -303,21 +402,33 @@ const ProjectAssistDashboard = () => {
   };
 
   const handleProceed = async () => {
-    setShowModal(false);
+    // setShowModal(false);
     setUploading(true);
 
     try {
       const { data } = await axios.post(`${ENV.API_URL}/${projectId}/proceed`);
 
       if (data?.status === "success") {
-        setHasErrorLog(false);
-        await Swal.fire({
-          title: "Success!",
-          text: "Files uploaded successfully!",
-          icon: "success",
-          confirmButtonText: "Confirm",
-          customClass: { confirmButton: "custom-confirm" }
+        
+setHasErrorLog(false);
+
+  // Refresh project, then pop the Existing Documents dialog (no page refresh)
+  try {
+    const refreshed = await axios.get(`${ENV.API_URL}/${projectId}`);
+    setProject(refreshed.data);
+    setProjectName(refreshed.data.project_name);
+  } catch (e) {
+    console.error("Failed to refresh project after proceed:", e);
+  }
+  await Swal.fire({
+    title: "Success!",
+    text: "Files uploaded successfully!",
+    icon: "success",
+    confirmButtonText: "Confirm",
+    customClass: { confirmButton: "custom-confirm" }
+
         });
+        setShowModal(false);
       } else {
         setHasErrorLog(true);
         await Swal.fire({
@@ -378,6 +489,26 @@ const ProjectAssistDashboard = () => {
                   />
                 )}
 
+                {/* Exiting Document Button*/}
+                {hasExistingDocuments && (
+                <Button
+                  variant="outlined"
+                  onClick={() => setExistingOpen(true)}
+                  size="small"
+                  sx={{
+                    color: "#fff",                   // matches contained button text contrast
+                    backgroundColor: "#2e2e38",      // same as upload button
+                    borderColor: "#2e2e38",
+                    "&:hover": {
+                      backgroundColor: "#1f1f28",    // same hover color
+                      borderColor: "#1f1f28",
+                    },
+                  }}
+                >
+                  Existing Document
+                </Button>
+                )}
+
                 {/*Upload Button: This button opens the MUI upload dialog */}
                 <Button
                   variant="contained"
@@ -421,7 +552,8 @@ const ProjectAssistDashboard = () => {
           <Box component="form" id="upload-form" onSubmit={handleSubmit}>
             <TextField
               fullWidth
-              required
+              /* Make required only if the project has NO existing files */
+              required={!hasExistingDocuments}
               margin="normal"
               label="Project Plan"
               type="file"
@@ -441,10 +573,16 @@ const ProjectAssistDashboard = () => {
                     </IconButton>
                   ),
               }}
+              // --- ADD: inline duplicate-hash warning (non-modal)
+              helperText={fileHashWarnings?.project_plan || ""}
+              FormHelperTextProps={{
+                sx: { color: fileHashWarnings?.project_plan ? "warning.main" : undefined },
+              }}
               sx={{
-                "& .MuiFormLabel-asterisk": {
-                  color: "#2e2e38",
-                },
+                /* If optional, hide the asterisk; if required, keep color */
+                ...(hasExistingDocuments
+                  ? { "& .MuiFormLabel-asterisk": { display: "none" } }
+                  : { "& .MuiFormLabel-asterisk": { color: "#000000" } }),
               }}
             />
 
@@ -469,6 +607,11 @@ const ProjectAssistDashboard = () => {
                     </IconButton>
                   ),
               }}
+              // --- ADD
+              helperText={fileHashWarnings?.pto_calendar || ""}
+              FormHelperTextProps={{
+                sx: { color: fileHashWarnings?.pto_calendar ? "warning.main" : undefined },
+              }}
             />
 
             <TextField
@@ -491,6 +634,11 @@ const ProjectAssistDashboard = () => {
                       <CloseIcon sx={{ color: "#2e2e38" }} />
                     </IconButton>
                   ),
+              }}
+              // --- ADD
+              helperText={fileHashWarnings?.resource_allocation || ""}
+              FormHelperTextProps={{
+                sx: { color: fileHashWarnings?.resource_allocation ? "warning.main" : undefined },
               }}
             />
 
@@ -515,9 +663,14 @@ const ProjectAssistDashboard = () => {
                     </IconButton>
                   ),
               }}
+              // --- ADD
+              helperText={fileHashWarnings?.raid_log || ""}
+              FormHelperTextProps={{
+                sx: { color: fileHashWarnings?.raid_log ? "warning.main" : undefined },
+              }}
             />
 
-            {/* --- NEW: Additional Documents Component with row add/remove --- */}
+            {/* --- Additional Documents Component with row add/remove --- */}
             <AdditionalDocuments
               files={files}
               setFiles={setFiles}
@@ -552,7 +705,7 @@ const ProjectAssistDashboard = () => {
             {uploading ? (
               <Stack direction="row" spacing={1} alignItems="center">
                 <CircularProgress size={18} color="inherit" />
-                <span>Uploading...</span>
+                <span>Validating...</span>
               </Stack>
             ) : (
               "Submit"
@@ -639,25 +792,41 @@ const ProjectAssistDashboard = () => {
               Cancel
             </Button>
 
-
             <Button
               onClick={() => handleProceed(false)}
               variant="contained"
+              disabled={uploading}
               sx={{
-                backgroundColor: '#2e2e38',
-                color: '#fff',
-                '&:hover': {
-                  backgroundColor: '#1f1f25'
-                }
+                backgroundColor: "#2e2e38",
+                "&:hover": { backgroundColor: "#1f1f28" },
+                minWidth: 120,
+                fontFamily: "EYInterstate-Regular, sans-serif",
               }}
             >
-              Skip & Continue
+              {uploading ? (
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <CircularProgress size={18} color="inherit" />
+                  <span>Uploading...</span>
+                </Stack>
+              ) : (
+                "Skip & Continue"
+              )}
             </Button>
 
           </Box>
         </DialogActions>
-
       </Dialog>
+      
+        <ExistingDocumentsDialog
+        open={existingOpen}
+        onClose={() => setExistingOpen(false)}
+        project={project}
+        projectId={projectId}
+        ENV={ENV}
+        axios={axios}
+        Swal={Swal}
+      />
+
     </Box>
   );
 };

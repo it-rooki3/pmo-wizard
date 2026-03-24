@@ -25,10 +25,11 @@ import remarkGfm from 'remark-gfm';
 import remarkBreaks from "remark-breaks";
 
 // Prompt windows
-import ProjectRiskReport from "./projectRiskReport";
-import ResourceRiskPrompt from "./resourceRisk";
-import MilestonePrompt from "./milestone";
-import TaskEvaluation from "./taskEvaluation";
+import ProjectRiskReport from "./prompts/projectRiskReport";
+import ResourceRiskPrompt from "./prompts/resourceRisk";
+import MilestonePrompt from "./prompts/milestone";
+import TaskEvaluation from "./prompts/taskEvaluation";
+import CustomPrompts from "./prompts/customPrompts";
 
 
 export default function Chatbot() {
@@ -283,20 +284,53 @@ export default function Chatbot() {
                     {textWithNewlines}
                   </Typography>
                 ) : (
-                  <Box
-                    sx={{
-                      p: 2,
-                      mr: isUser ? 2 : 0,
-                      ml: isUser ? 0 : 2,
-                      mb: isUser ? 2 : 4,
-                      borderRadius: 3,
-                      bgcolor: isUser ? "primary.main" : "grey.100",
-                      color: isUser ? "primary.contrastText" : "text.primary",
-                      maxWidth: 600,
-                      wordBreak: "break-word",
-                      whiteSpace: "pre-wrap",
-                    }}
-                  >
+                    <Box
+                      sx={{
+                        p: 2,
+                        mr: isUser ? 2 : 0,
+                        ml: isUser ? 0 : 2,
+                        mb: isUser ? 2 : 4,
+                        borderRadius: 3,
+                        bgcolor: isUser ? "primary.main" : "grey.100",
+                        color: isUser ? "primary.contrastText" : "text.primary",
+                        maxWidth: 600,
+                        //width: "95%", //Change to Whole Width for Response Chat
+                        //maxWidth: "95%", //Change to Whole Width for Response Chat
+                        wordBreak: "break-word",
+                        // Let block elements (like tables) flow naturally
+                        whiteSpace: "normal",
+                      
+                        /* ---------- Markdown spacing fixes scoped to this bubble ---------- */
+                        "& table": {
+                          width: "100%",
+                          borderCollapse: "separate",
+                          borderSpacing: "12px 6px", // column gap, row gap
+                          tableLayout: "auto",
+                        },
+                        "& th, & td": {
+                          padding: "4px 12px",       // inner cell padding
+                          verticalAlign: "top",
+                          textAlign: "left",
+                          lineHeight: 1.5,
+                          whiteSpace: "normal",
+                        },
+                        // Uncomment if you want faint row separators
+                        // "& tr + tr td, & tr + tr th": { borderTop: "1px solid #e0e0e0" },
+                      
+                        // Tighten typical Markdown inside the bubble
+                        "& p": { margin: 0 },
+                        "& ul, & ol": { marginTop: 0, marginBottom: 0 },
+                        "& li": { marginTop: "4px", marginBottom: "4px" },
+                      
+                        // Heading spacing above elements like the PTO table
+                        "& h1, & h2, & h3": {
+                          marginTop: 0,
+                          marginBottom: "10px",
+                          lineHeight: 1.25,
+                        },
+                      }}
+                    >
+
                     <ReactMarkdown
                       remarkPlugins={[remarkGfm, remarkBreaks]}
                       components={{
@@ -304,15 +338,15 @@ export default function Chatbot() {
                           <Typography
                             variant="body2"
                             component="p"
-                            sx={{ margin: 0, padding: 0 }}   // 🔥 FIX SPACING
+                            sx={{ margin: 0, padding: 0 }}   // FIX SPACING
                             {...props}
                           />
                         ),
                         li: ({ node, ...props }) => (
                           <li
                             style={{
-                              marginTop: 4,    // 🔥 Tight bullet spacing
-                              marginBottom: 4, //
+                              marginTop: 4,    // Tight bullet spacing
+                              marginBottom: 4,
                               marginLeft: 0,
                             }}
                             {...props}
@@ -377,138 +411,113 @@ export default function Chatbot() {
 
       {/* FLEX ROW FOR LEFT + RIGHT BUTTONS */}
       {/* FLEX ROW FOR LEFT + RIGHT BUTTONS */}
-<Box 
-  sx={{ 
-    display: "flex", 
-    alignItems: "center", 
-    mt: 1, 
-    mb: 1 
-  }}
->
-  {/* LEFT SIDE — PROJECT HEALTH BUTTON */}
-  <ProjectRiskReport onSubmit={handlePromptSubmit} />
-
-  {/* RIGHT SIDE — ASSOCIATED PROJECT RISK BUTTON */}
-  <Box sx={{ ml: 1, mr: 1 }}>
-    <Button
-      variant="contained"
-      sx={{
-        width: 250,
-        py: 1,
-        fontSize: ".8rem",
-        fontWeight: "bold",
-        backgroundColor: "#2e2e38"
-      }}
-      onClick={(e) => setAnchorElAssociated(e.currentTarget)}
-    >
-      Associated Project Risk
-      <ArrowDropUpIcon sx={{ ml: .5 }} />
-    </Button>
-
-    <Popover
-      open={Boolean(anchorElAssociated)}
-      anchorEl={anchorElAssociated}
-      onClose={() => setAnchorElAssociated(null)}
-      anchorOrigin={{
-        vertical: "top",
-        horizontal: "left",
-      }}
-      transformOrigin={{
-        vertical: "bottom",
-        horizontal: "left",
-      }}
-      PaperProps={{
-        sx: {
-          mt: -1,
-          borderRadius: 2,
-          p: 1.5,
-          width: 260,
-          backgroundColor: "#f5f5f5",
-          boxShadow: "0 4px 20px rgba(0,0,0,0.25)",
-        }
-      }}
-    >
-      <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-        <TaskEvaluation onSubmit={handlePromptSubmit} />
-        <ResourceRiskPrompt onSubmit={handlePromptSubmit} />
-        <MilestonePrompt onSubmit={handlePromptSubmit} />
-      </Box>
-    </Popover>
-  </Box>
-
-  {/* CUSTOM PROMPT BUTTON */}
-  <Box>
-    <Button
-      variant="contained"
-      sx={{
-        width: 250,
-        py: 1,
-        fontSize: ".8rem",
-        fontWeight: "bold",
-        backgroundColor: "#2e2e38"
-      }}
-      onClick={(e) => setAnchorElCustom(e.currentTarget)}
-    >
-      Custom Prompt
-      <ArrowDropUpIcon sx={{ ml: .5 }} />
-    </Button>
-
-    <Popover
-      open={Boolean(anchorElCustom)}
-      anchorEl={anchorElCustom}
-      onClose={() => setAnchorElCustom(null)}
-      anchorOrigin={{
-        vertical: "top",
-        horizontal: "left",
-      }}
-      transformOrigin={{
-        vertical: "bottom",
-        horizontal: "left",
-      }}
-      PaperProps={{
-        sx: {
-          mt: -1,
-          borderRadius: 2,
-          p: 2,
-          width: 260,
-          backgroundColor: "#f5f5f5",
-          boxShadow: "0 4px 20px rgba(0,0,0,0.25)",
-        }
-      }}
-    >
-      <Typography
-        variant="subtitle2"
-        sx={{ fontWeight: "bold", mb: 1 }}
-      >
-        List of Custom Prompt
-      </Typography>
-
-      <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-        <Typography
-          variant="body2"
-          sx={{ textAlign: "center", color: "gray", py: 1 }}
-        >
-          No Custom Prompt yet
-        </Typography>
-      </Box>
-
-      <Divider sx={{ my: 1.5 }} />
-
-      <Button
-        variant="contained"
-        fullWidth
-        sx={{
-          backgroundColor: "#2e2e38",
-          fontWeight: "bold",
-          py: 1,
+      <Box 
+        sx={{ 
+         display: "flex", 
+          alignItems: "center", 
+          mt: 1, 
+          mb: 1 
         }}
-        onClick={handlePromptSubmit}
       >
-        Create Prompt
-      </Button>
-    </Popover>
-  </Box>
-</Box>
+        {/* LEFT SIDE — PROJECT HEALTH BUTTON */}
+        <ProjectRiskReport onSubmit={handlePromptSubmit} />
+
+          {/* RIGHT SIDE — ASSOCIATED PROJECT RISK BUTTON */}
+          <Box sx={{ ml: 1, mr: 1 }}>
+            <Button
+              variant="contained"
+              sx={{
+                width: 250,
+                py: 1,
+                fontSize: ".8rem",
+                fontWeight: "bold",
+                backgroundColor: "#2e2e38",
+              }}
+              onClick={(e) => setAnchorElAssociated(e.currentTarget)}
+            >
+              Associated Project Risk
+              <ArrowDropUpIcon sx={{ ml: .5 }} />
+            </Button>
+                  
+            <Popover
+              open={Boolean(anchorElAssociated)}
+              anchorEl={anchorElAssociated}
+              onClose={() => setAnchorElAssociated(null)}
+              anchorOrigin={{
+                vertical: "top",
+                horizontal: "left",
+              }}
+              transformOrigin={{
+                vertical: "bottom",
+                horizontal: "left",
+              }}
+              PaperProps={{
+                sx: {
+                  mt: -1,
+                  borderRadius: 2,
+                  p: 1.5,
+                  width: 260,
+                  backgroundColor: "#f5f5f5",
+                  boxShadow: "0 4px 20px rgba(0,0,0,0.25)",
+                }
+              }}
+            >
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                <TaskEvaluation onSubmit={handlePromptSubmit} />
+                <ResourceRiskPrompt onSubmit={handlePromptSubmit} />
+                <MilestonePrompt onSubmit={handlePromptSubmit} />
+              </Box>
+            </Popover>
+          </Box>
+                  
+          {/* CUSTOM PROMPT BUTTON */}
+          <Box>
+            <Button
+              variant="contained"
+              sx={{
+                width: 250,
+                py: 1,
+                fontSize: ".8rem",
+                fontWeight: "bold",
+                backgroundColor: "#2e2e38"
+              }}
+              onClick={(e) => setAnchorElCustom(e.currentTarget)}
+            >
+              Additional Prompts
+              <ArrowDropUpIcon sx={{ ml: .5 }} />
+            </Button>
+            
+            <Popover
+              open={Boolean(anchorElCustom)}
+              anchorEl={anchorElCustom}
+              onClose={() => setAnchorElCustom(null)}
+              anchorOrigin={{
+                vertical: "top",
+                horizontal: "left",
+              }}
+              transformOrigin={{
+                vertical: "bottom",
+                horizontal: "left",
+              }}
+              PaperProps={{
+                sx: {
+                  mt: -1,
+                  borderRadius: 2,
+                  p: 2,
+                  width: 260,
+                  backgroundColor: "#f5f5f5",
+                  boxShadow: "0 4px 20px rgba(0,0,0,0.25)",
+                }
+              }}
+            >       
+
+            {/*Prompt List*/}
+            {/*Create Prompt*/}
+            <CustomPrompts onSubmit={handlePromptSubmit} />
+
+            </Popover>
+          </Box>
+      </Box>
       
 
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
